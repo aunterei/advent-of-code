@@ -39,3 +39,9 @@ npm run init --aocYear=2022 --aocDay=1
 Here you will find all my results for this year.
 
 <!--- advent_readme_stars table --->
+## 2022 Results
+
+| Day | Part 1 | Part 2 |
+| :---: | :---: | :---: |
+| [Day 1](https://adventofcode.com/2022/day/1) | ⭐ | ⭐ |
+<!--- advent_readme_stars table --->
