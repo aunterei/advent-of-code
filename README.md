@@ -46,4 +46,5 @@ Here you will find all my results for this year.
 | [Day 1](https://adventofcode.com/2022/day/1) | ⭐ | ⭐ |
 | [Day 2](https://adventofcode.com/2022/day/2) | ⭐ | ⭐ |
 | [Day 3](https://adventofcode.com/2022/day/3) | ⭐ | ⭐ |
+| [Day 4](https://adventofcode.com/2022/day/4) | ⭐ | ⭐ |
 <!--- advent_readme_stars table --->
