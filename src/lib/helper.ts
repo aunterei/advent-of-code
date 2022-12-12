@@ -75,3 +75,119 @@ export function commonElementInMultipleArrays<T>(group: T[][]): T {
   const commonElements = group.reduce((a, b) => a.filter((c) => b.includes(c)));
   return commonElements.length ? commonElements[0] : null;
 }
+
+//#region BFS
+
+export type Coordinates = [number, number];
+
+export type neighborFilteringCondition = (
+  current: Coordinates,
+  neighbor: Coordinates
+) => boolean;
+
+interface BfsResult {
+  visited: Node[];
+  endNode: Node;
+}
+
+interface Node {
+  coord: Coordinates;
+  weight: number;
+}
+
+export function getCartesianNeighbors<T>(
+  [x, y]: Coordinates,
+  searchMap: T[][]
+): Coordinates[] {
+  return [
+    [-1, 0],
+    [0, -1],
+    [0, 1],
+    [1, 0],
+  ]
+    .map(([dx, dy]) => [x + dx, y + dy] as Coordinates)
+    .filter(
+      ([x, y]) =>
+        x >= 0 && y >= 0 && x < searchMap[0].length && y < searchMap.length
+    );
+}
+
+export function getCellValue<T>(map: T[][], coord: Coordinates): T {
+  const [x, y] = coord;
+  return map[y][x];
+}
+
+export function bfs(
+  searchMap: number[][],
+  start: Coordinates,
+  end: Coordinates,
+  neighborsFiltering: {
+    enabled: boolean;
+    condition: neighborFilteringCondition;
+  } = {
+    enabled: false,
+    condition: null,
+  },
+  reverseOptions: { enabled: boolean; searchedWeight: number } = {
+    enabled: false,
+    searchedWeight: 0,
+  }
+): BfsResult {
+  if (!start || !end) {
+    return;
+  }
+
+  const queue: Node[] = [
+    { coord: reverseOptions.enabled ? end : start, weight: 0 },
+  ];
+  const visited: Node[] = [];
+
+  while (queue.length) {
+    const current = queue.shift();
+    const { coord, weight } = current;
+
+    // Don't revisit a coordinate
+    if (
+      visited.findIndex((visited) =>
+        areCoordinatesEqual(coord, visited.coord)
+      ) !== -1
+    ) {
+      continue;
+    }
+
+    visited.push(current);
+
+    if (
+      reverseOptions.enabled &&
+      getCellValue(searchMap, current.coord) === reverseOptions.searchedWeight
+    ) {
+      return { visited: visited, endNode: current };
+    } else if (!reverseOptions.enabled && areCoordinatesEqual(coord, end)) {
+      return { visited: visited, endNode: current };
+    }
+
+    queue.push(
+      ...getCartesianNeighbors<number>(coord, searchMap)
+        .filter((neighbor) =>
+          neighborsFiltering.enabled
+            ? neighborsFiltering.condition(coord, neighbor)
+            : true
+        )
+        .map((neighborCoord) => {
+          return { coord: neighborCoord, weight: weight + 1 } as Node;
+        })
+    );
+  }
+
+  return {
+    visited: visited,
+    endNode: { coord: [-1, -1], weight: Number.MAX_SAFE_INTEGER },
+  };
+}
+
+function areCoordinatesEqual(a: Coordinates, b: Coordinates) {
+  const [aX, aY] = a;
+  const [bX, bY] = b;
+  return aX === bX && aY === bY;
+}
+//#endregion
