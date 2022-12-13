@@ -97,7 +97,8 @@ interface Node {
 
 export function getCartesianNeighbors<T>(
   [x, y]: Coordinates,
-  searchMap: T[][]
+  searchMap: T[][],
+  withinBound = true
 ): Coordinates[] {
   return [
     [-1, 0],
@@ -106,10 +107,14 @@ export function getCartesianNeighbors<T>(
     [1, 0],
   ]
     .map(([dx, dy]) => [x + dx, y + dy] as Coordinates)
-    .filter(
-      ([x, y]) =>
-        x >= 0 && y >= 0 && x < searchMap[0].length && y < searchMap.length
-    );
+    .filter(([x, y]) => {
+      let condition = x >= 0 && y >= 0;
+      if (withinBound) {
+        condition =
+          condition && x < searchMap[0].length && y < searchMap.length;
+      }
+      return condition;
+    });
 }
 
 export function getCellValue<T>(map: T[][], coord: Coordinates): T {
@@ -118,28 +123,15 @@ export function getCellValue<T>(map: T[][], coord: Coordinates): T {
 }
 
 export function bfs(
-  searchMap: number[][],
   start: Coordinates,
-  end: Coordinates,
-  neighborsFiltering: {
-    enabled: boolean;
-    condition: neighborFilteringCondition;
-  } = {
-    enabled: false,
-    condition: null,
-  },
-  reverseOptions: { enabled: boolean; searchedWeight: number } = {
-    enabled: false,
-    searchedWeight: 0,
-  }
+  endCondition: (coordinates: Coordinates) => boolean,
+  getNextCoordinates: (coordinates: Coordinates) => Coordinates[]
 ): BfsResult {
-  if (!start || !end) {
+  if (!start || !endCondition || !getNextCoordinates) {
     return;
   }
 
-  const queue: Node[] = [
-    { coord: reverseOptions.enabled ? end : start, weight: 0 },
-  ];
+  const queue: Node[] = [{ coord: start, weight: 0 }];
   const visited: Node[] = [];
 
   while (queue.length) {
@@ -157,26 +149,15 @@ export function bfs(
 
     visited.push(current);
 
-    if (
-      reverseOptions.enabled &&
-      getCellValue(searchMap, current.coord) === reverseOptions.searchedWeight
-    ) {
-      return { visited: visited, endNode: current };
-    } else if (!reverseOptions.enabled && areCoordinatesEqual(coord, end)) {
+    if (endCondition(current.coord)) {
       return { visited: visited, endNode: current };
     }
 
-    queue.push(
-      ...getCartesianNeighbors<number>(coord, searchMap)
-        .filter((neighbor) =>
-          neighborsFiltering.enabled
-            ? neighborsFiltering.condition(coord, neighbor)
-            : true
-        )
-        .map((neighborCoord) => {
-          return { coord: neighborCoord, weight: weight + 1 } as Node;
-        })
-    );
+    for (let node of getNextCoordinates(current.coord).map((neighborCoord) => {
+      return { coord: neighborCoord, weight: weight + 1 } as Node;
+    })) {
+      queue.push(node);
+    }
   }
 
   return {
@@ -185,7 +166,7 @@ export function bfs(
   };
 }
 
-function areCoordinatesEqual(a: Coordinates, b: Coordinates) {
+export function areCoordinatesEqual(a: Coordinates, b: Coordinates) {
   const [aX, aY] = a;
   const [bX, bY] = b;
   return aX === bX && aY === bY;

@@ -1,6 +1,8 @@
 import {
+  areCoordinatesEqual,
   bfs,
   Coordinates,
+  getCartesianNeighbors,
   getCellValue,
   neighborFilteringCondition,
 } from 'lib/helper';
@@ -46,41 +48,30 @@ class Resolver {
   solve1() {
     const logger = new Logger(`Day${this.day}-1`);
 
-    const ascendAtMostOne: neighborFilteringCondition = (
-      current: Coordinates,
-      neighbor: Coordinates
-    ) =>
-      getCellValue<number>(this.searchMap, neighbor) <=
-      getCellValue<number>(this.searchMap, current) + 1;
-
-    const bfsResult = bfs(this.searchMap, this.start, this.end, {
-      enabled: true,
-      condition: ascendAtMostOne,
-    });
+    const bfsResult = bfs(
+      this.start,
+      ([x, y]) => areCoordinatesEqual([x, y], this.end),
+      ([x, y]) =>
+        getCartesianNeighbors([x, y], this.searchMap).filter(
+          ([neighborX, neighborY]) =>
+            this.searchMap[neighborY][neighborX] - this.searchMap[y][x] <= 1
+        )
+    );
     logger.result(bfsResult.endNode.weight);
   }
 
   solve2() {
     const logger = new Logger(`Day${this.day}-2`);
 
-    const descendAtMostOne: neighborFilteringCondition = (
-      current: Coordinates,
-      neighbor: Coordinates
-    ) =>
-      getCellValue(this.searchMap, neighbor) >=
-      getCellValue(this.searchMap, current) - 1;
-
     const bfsResult = bfs(
-      this.searchMap,
-      this.start,
       this.end,
-      {
-        enabled: true,
-        condition: descendAtMostOne,
-      },
-      { enabled: true, searchedWeight: 0 }
+      ([x, y]) => this.searchMap[y][x] === 0,
+      ([x, y]) =>
+        getCartesianNeighbors([x, y], this.searchMap).filter(
+          ([neighborX, neighborY]) =>
+            this.searchMap[neighborY][neighborX] >= this.searchMap[y][x] - 1
+        )
     );
-
     logger.result(bfsResult.endNode.weight);
   }
 }
@@ -90,5 +81,5 @@ const day = '12';
 const testing = false;
 
 const resolver = new Resolver({ year, day, testing });
-// resolver.solve1();
+resolver.solve1();
 resolver.solve2();
