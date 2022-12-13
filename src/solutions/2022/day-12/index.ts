@@ -3,11 +3,9 @@ import {
   bfs,
   Coordinates,
   getCartesianNeighbors,
-  getCellValue,
-  neighborFilteringCondition,
 } from 'lib/helper';
 import { Logger } from 'lib/log';
-import { parseFile, parseLine } from 'lib/parser';
+import { parseFile } from 'lib/parser';
 
 class Resolver {
   year: string;
@@ -32,8 +30,8 @@ class Resolver {
 
     this.searchMap = this.file.split('\n').map((row, y) =>
       row.split('').map((cell, x) => {
-        if (cell === 'S') this.start = [x, y];
-        if (cell === 'E') this.end = [x, y];
+        if (cell === 'S') this.start = { x: x, y: y };
+        if (cell === 'E') this.end = { x: x, y: y };
         return this.getCellHeight(cell);
       })
     );
@@ -50,11 +48,12 @@ class Resolver {
 
     const bfsResult = bfs(
       this.start,
-      ([x, y]) => areCoordinatesEqual([x, y], this.end),
-      ([x, y]) =>
-        getCartesianNeighbors([x, y], this.searchMap).filter(
-          ([neighborX, neighborY]) =>
-            this.searchMap[neighborY][neighborX] - this.searchMap[y][x] <= 1
+      (c) => areCoordinatesEqual(c, this.end),
+      (c) =>
+        getCartesianNeighbors(c, this.searchMap).filter(
+          (neighbor) =>
+            this.searchMap[neighbor.y][neighbor.x] - this.searchMap[c.y][c.x] <=
+            1
         )
     );
     logger.result(bfsResult.endNode.weight);
@@ -65,11 +64,12 @@ class Resolver {
 
     const bfsResult = bfs(
       this.end,
-      ([x, y]) => this.searchMap[y][x] === 0,
-      ([x, y]) =>
-        getCartesianNeighbors([x, y], this.searchMap).filter(
-          ([neighborX, neighborY]) =>
-            this.searchMap[neighborY][neighborX] >= this.searchMap[y][x] - 1
+      (c) => this.searchMap[c.y][c.x] === 0,
+      (c) =>
+        getCartesianNeighbors(c, this.searchMap).filter(
+          (neighbor) =>
+            this.searchMap[neighbor.y][neighbor.x] >=
+            this.searchMap[c.y][c.x] - 1
         )
     );
     logger.result(bfsResult.endNode.weight);

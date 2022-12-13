@@ -78,7 +78,10 @@ export function commonElementInMultipleArrays<T>(group: T[][]): T {
 
 //#region BFS
 
-export type Coordinates = [number, number];
+export interface Coordinates {
+  x: number;
+  y: number;
+}
 
 export type neighborFilteringCondition = (
   current: Coordinates,
@@ -96,30 +99,37 @@ interface Node {
 }
 
 export function getCartesianNeighbors<T>(
-  [x, y]: Coordinates,
+  current: Coordinates,
   searchMap: T[][],
   withinBound = true
 ): Coordinates[] {
   return [
-    [-1, 0],
-    [0, -1],
-    [0, 1],
-    [1, 0],
+    { x: -1, y: 0 },
+    { x: 0, y: -1 },
+    { x: 0, y: 1 },
+    { x: 1, y: 0 },
   ]
-    .map(([dx, dy]) => [x + dx, y + dy] as Coordinates)
-    .filter(([x, y]) => {
-      let condition = x >= 0 && y >= 0;
+    .map((offset) => {
+      const coordinates: Coordinates = {
+        x: current.x + offset.x,
+        y: current.y + offset.y,
+      };
+      return coordinates;
+    })
+    .filter((coord) => {
+      let condition = coord.x >= 0 && coord.y >= 0;
       if (withinBound) {
         condition =
-          condition && x < searchMap[0].length && y < searchMap.length;
+          condition &&
+          coord.x < searchMap[0].length &&
+          coord.y < searchMap.length;
       }
       return condition;
     });
 }
 
 export function getCellValue<T>(map: T[][], coord: Coordinates): T {
-  const [x, y] = coord;
-  return map[y][x];
+  return map[coord.y][coord.x];
 }
 
 export function bfs(
@@ -162,13 +172,12 @@ export function bfs(
 
   return {
     visited: visited,
-    endNode: { coord: [-1, -1], weight: Number.MAX_SAFE_INTEGER },
+    endNode: { coord: { x: -1, y: -1 }, weight: Number.MAX_SAFE_INTEGER },
   };
 }
 
 export function areCoordinatesEqual(a: Coordinates, b: Coordinates) {
-  const [aX, aY] = a;
-  const [bX, bY] = b;
-  return aX === bX && aY === bY;
+  return a.x === b.x && a.y === b.y;
 }
+
 //#endregion
