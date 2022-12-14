@@ -78,9 +78,19 @@ export function commonElementInMultipleArrays<T>(group: T[][]): T {
 
 //#region BFS
 
-export interface Coordinates {
+export class Coordinates extends Object {
   x: number;
   y: number;
+
+  constructor(x: number, y: number) {
+    super();
+    this.x = x;
+    this.y = y;
+  }
+
+  public override toString(): string {
+    return `[${this.x},${this.y}]`;
+  }
 }
 
 export type neighborFilteringCondition = (
@@ -180,4 +190,50 @@ export function areCoordinatesEqual(a: Coordinates, b: Coordinates) {
   return a.x === b.x && a.y === b.y;
 }
 
+export class CoordinatesSet extends Set<Coordinates> {
+  private readonly keyMap: Map<string, Coordinates> = new Map();
+
+  private key(value: Coordinates): string {
+    return value.toString();
+  }
+
+  public push(x: number, y: number) {
+    return this.add(new Coordinates(x, y));
+  }
+
+  override add(value: Coordinates): this {
+    const key = this.key(value);
+
+    const old = this.keyMap.get(key);
+    if (old) {
+      this.delete(old);
+    }
+    this.keyMap.set(key, value);
+    super.add(value);
+    return this;
+  }
+
+  override clear(): void {
+    this.keyMap.clear();
+    super.clear();
+  }
+
+  override delete(value: Coordinates): boolean {
+    const key = this.key(value);
+    const old = this.keyMap.get(key);
+    if (old) {
+      this.keyMap.delete(key);
+      return super.delete(old);
+    }
+    return false;
+  }
+
+  public hadCoordinates(x: number, y: number): boolean {
+    return this.has(new Coordinates(x, y));
+  }
+
+  override has(value: Coordinates): boolean {
+    return this.keyMap.has(this.key(value));
+  }
+}
 //#endregion
