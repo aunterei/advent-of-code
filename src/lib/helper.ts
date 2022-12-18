@@ -93,6 +93,20 @@ export class Coordinates extends Object {
   }
 }
 
+export class Coordinates3D extends Coordinates {
+  z: number;
+  explored = false;
+
+  constructor(x: number, y: number, z: number) {
+    super(x, y);
+    this.z = z;
+  }
+
+  public override toString(): string {
+    return `[${this.x},${this.y},${this.z}]`;
+  }
+}
+
 export type neighborFilteringCondition = (
   current: Coordinates,
   neighbor: Coordinates
