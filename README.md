@@ -64,4 +64,5 @@ Here you will find all my results for this year.
 | [Day 20](https://adventofcode.com/2022/day/20) | ⭐ | ⭐ |
 | [Day 21](https://adventofcode.com/2022/day/21) | ⭐ | ⭐ |
 | [Day 22](https://adventofcode.com/2022/day/22) | ⭐ | ⭐ |
+| [Day 23](https://adventofcode.com/2022/day/23) | ⭐ | ⭐ |
 <!--- advent_readme_stars table --->
